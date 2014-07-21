@@ -1,0 +1,11 @@
+main: com.gabezter.MoblieChest.Main
+name: Chest Access
+version: 0.0.12
+commands:
+  chestaccess:
+    aliases: ca
+    permission: ca.main
+permissions:
+  ca.main:
+   description: Main and Only command.
+   default: not op
