@@ -18,9 +18,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
 	File folder = new File(this.getDataFolder().getAbsolutePath()
 			+ File.separator + "User's Chest");
-	File chests;
+	File chests;  
 	Configs config;
-	Listen listen = new Listen();
+	Listen listen = new Listen(this);
 
 	@Override
 	public void onEnable() {

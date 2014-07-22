@@ -9,19 +9,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Configs {
-	private Configs() {
+	private Configs(Main plugin) {
+		this.plugin = plugin;
 	}
-
-	private static Configs instance = null;
 	Main plugin;
-
-	public static Configs getInstance() {
-		if (instance == null) {
-			instance = new Configs();
-		}
-
-		return instance;
-	}
 
 	private HashMap<JavaPlugin, HashMap<String, FileConfiguration>> configs = new HashMap<JavaPlugin, HashMap<String, FileConfiguration>>();
 

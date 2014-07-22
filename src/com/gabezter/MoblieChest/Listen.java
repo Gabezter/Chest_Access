@@ -15,10 +15,14 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
+import com.gabezter.MoblieChest.*;
 
 public class Listen implements Listener {
-
+	
 	Main plugin;
+	public Listen(Main plugin){
+		this.plugin = plugin;
+	}
 
 	@EventHandler
 	public void playerJoin(PlayerJoinEvent e) {
@@ -38,7 +42,7 @@ public class Listen implements Listener {
 								+ e.getPlayer().getName() + ".yml");
 			}
 		}
-		plugin.config.getConfig(e.getPlayer().getName()).addDefault("Chests.",null);
+		plugin.config.getConfig(e.getPlayer().getName()).set("Chests.","");
 	}
 
 	@EventHandler
