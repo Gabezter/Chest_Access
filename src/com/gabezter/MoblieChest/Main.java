@@ -2,6 +2,7 @@ package com.gabezter.MoblieChest;
 
 import java.io.File;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -71,6 +72,14 @@ public class Main extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command cmd, String label,
 			String[] args) {
 		if (cmd.getName().equalsIgnoreCase("chestaccess")) {
+			if(args[0].equalsIgnoreCase("")){
+				if(config.getConfig(sender.getName()).getKeys(true).size()== 0){
+					sender.sendMessage(ChatColor.GOLD + "You have 0 chests!!!");
+				}else if(config.getConfig(sender.getName()).getKeys(true).size() > 0){
+					sender.sendMessage(ChatColor.GOLD + "You have " + config.getConfig(sender.getName()).getKeys(true).size() + "chests.");
+				}
+				
+			}else
 			if (sender.hasPermission("ca.main")) {
 				String name = args[0];
 				if (config.getConfig(sender.getName()).contains(name)) {
