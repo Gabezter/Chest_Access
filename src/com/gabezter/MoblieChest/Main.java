@@ -12,6 +12,7 @@ import org.bukkit.block.DoubleChest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,8 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
 	File folder = new File(this.getDataFolder().getAbsolutePath()
 			+ File.separator + "User's Chest");
-	File chests;  
-	Configs config;
+	File chests;
 	Listen listen = new Listen(this);
 
 	@Override
@@ -32,7 +32,8 @@ public class Main extends JavaPlugin {
 	}
 
 	@Override
-	public void onDisable() {}
+	public void onDisable() {
+	}
 
 	FileConfiguration userconfig = null;
 	File userFile;
@@ -72,22 +73,36 @@ public class Main extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command cmd, String label,
 			String[] args) {
 		if (cmd.getName().equalsIgnoreCase("chestaccess")) {
-			if(args[0].equalsIgnoreCase("")){
-				if(config.getConfig(sender.getName()).getKeys(true).size()== 0){
-					sender.sendMessage(ChatColor.GOLD + "You have 0 chests!!!");
-				}else if(config.getConfig(sender.getName()).getKeys(true).size() > 0){
-					sender.sendMessage(ChatColor.GOLD + "You have " + config.getConfig(sender.getName()).getKeys(true).size() + "chests.");
-				}
-				
-			}else
 			if (sender.hasPermission("ca.main")) {
 				String name = args[0];
-				if (config.getConfig(sender.getName()).contains(name)) {
-					Block chest = (Block) getChest(name);
-					Inventory i = getChestInventory(chest);
-					Player player = (Player) sender;
-					player.openInventory(i);
-					return true;
+				if (args[0].equalsIgnoreCase("")) {
+					userFile = new File(folder, sender.getName() + ".yml");
+					userconfig = YamlConfiguration.loadConfiguration(userFile);
+					if (userconfig.getConfigurationSection("Chests")
+							.getKeys(false).size() == 0) {
+						sender.sendMessage(ChatColor.GOLD
+								+ "You have 0 chests!!!");
+					} else if (userconfig
+							.getConfigurationSection("Chests").getKeys(false)
+							.size() > 0) {
+						sender.sendMessage(ChatColor.GOLD
+								+ "You have "
+								+ userconfig
+										.getKeys(true).size() + "chests.");
+						sender.sendMessage(ChatColor.GOLD
+								+ "You have "
+								+ userconfig.getKeys(
+										false));
+						return true;
+					}
+
+					else if (userconfig.contains(name)) {
+						Block chest = (Block) getChest(name);
+						Inventory i = getChestInventory(chest);
+						Player player = (Player) sender;
+						player.openInventory(i);
+						return true;
+					}
 				}
 				return true;
 			}

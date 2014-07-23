@@ -30,7 +30,7 @@ public class Listen implements Listener {
 				plugin.userFile.createNewFile();
 				plugin.userconfig = YamlConfiguration
 						.loadConfiguration(plugin.userFile);
-				plugin.userconfig.addDefault("Chests", "");
+				plugin.userconfig.addDefault("Chests", " ");
 				plugin.userconfig.options().copyDefaults(true);
 				plugin.userconfig.save(plugin.userFile);
 			} catch (IOException ec) {
@@ -44,29 +44,34 @@ public class Listen implements Listener {
 
 	@EventHandler
 	public void signRead(SignChangeEvent e) {
+		plugin.userFile = new File(plugin.folder, e.getPlayer().getName()
+				+ ".yml");
 		Block block = e.getBlock();
-		org.bukkit.block.Sign s = (org.bukkit.block.Sign)block.getState();
-		org.bukkit.material.Sign data = (org.bukkit.material.Sign)s.getData();
+		org.bukkit.block.Sign s = (org.bukkit.block.Sign) block.getState();
+		org.bukkit.material.Sign data = (org.bukkit.material.Sign) s.getData();
 		Block b = block.getRelative(data.getAttachedFace());
 		if (b.getType() == Material.CHEST) {
-			if (s.getLine(1).contains(e.getPlayer().getName())
-					&& !(s.getLine(2).contains(""))) {
-				e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest linked Successful!!"); 
-				plugin.config.getConfig(e.getPlayer().getName()).set("Chests.",
-						s.getLine(2));
-				plugin.config.getConfig(e.getPlayer().getName()).set(
-						"Chests." + s.getLine(2) + ".X",
+			if (e.getLine(1).equalsIgnoreCase(e.getPlayer().getName())
+					&& !(e.getLine(2).equals(""))) {
+				String var = "Chests." + e.getLine(2);
+				plugin.userconfig = YamlConfiguration
+						.loadConfiguration(plugin.userFile);
+				plugin.userconfig.set(var + ".X",
 						e.getBlock().getLocation().getBlockX());
-				plugin.config.getConfig(e.getPlayer().getName()).set(
-						"Chests." + s.getLine(2) + ".Y",
+				plugin.userconfig.set(var + ".Y",
 						e.getBlock().getLocation().getBlockY());
-				plugin.config.getConfig(e.getPlayer().getName()).set(
-						"Chests." + s.getLine(2) + ".Z",
+				plugin.userconfig.set(var + ".Z",
 						e.getBlock().getLocation().getBlockZ());
-				plugin.config.getConfig(e.getPlayer().getName()).set(
-						"Chests." + s.getLine(2) + ".World",
-						e.getBlock().getLocation().getWorld());
-				plugin.config.saveConfig(e.getPlayer().getName());
+				plugin.userconfig.set(var + ".World",
+						e.getBlock().getWorld().getName());
+				try {
+					plugin.userconfig.save(plugin.userFile);
+				} catch (IOException e1) {}
+				e.setLine(0, "~~~~~~~~~~~~~");
+				e.setLine(1, e.getPlayer().getName());
+				e.setLine(3, "~~~~~~~~~~~~~");
+				e.getPlayer().sendMessage(
+						ChatColor.DARK_GREEN + "Chest linked Successful!!");
 			}
 		}
 	}
