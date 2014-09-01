@@ -7,5 +7,4 @@ commands:
     permission: ca.main
 permissions:
   ca.main:
-   description: Main and Only command.
-   default: not op
+    description: Main Permission

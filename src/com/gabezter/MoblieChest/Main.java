@@ -75,36 +75,30 @@ public class Main extends JavaPlugin {
 		if (cmd.getName().equalsIgnoreCase("chestaccess")) {
 			if (sender.hasPermission("ca.main")) {
 				String name = args[0];
+				String playerName = sender.getName();
 				if (args[0].equalsIgnoreCase("")) {
-					userFile = new File(folder, sender.getName() + ".yml");
+					sender.sendMessage(ChatColor.DARK_GREEN + "Command WIP");
+					sender.sendMessage(ChatColor.DARK_GREEN
+							+ "Use /ca [Chest Name]");
+					return true;
+				}
+				if (!(args[0].equalsIgnoreCase(""))) {
+					userFile = new File(folder, playerName + ".yml");
 					userconfig = YamlConfiguration.loadConfiguration(userFile);
-					if (userconfig.getConfigurationSection("Chests")
-							.getKeys(false).size() == 0) {
-						sender.sendMessage(ChatColor.GOLD
-								+ "You have 0 chests!!!");
-					} else if (userconfig
-							.getConfigurationSection("Chests").getKeys(false)
-							.size() > 0) {
-						sender.sendMessage(ChatColor.GOLD
-								+ "You have "
-								+ userconfig
-										.getKeys(true).size() + "chests.");
-						sender.sendMessage(ChatColor.GOLD
-								+ "You have "
-								+ userconfig.getKeys(
-										false));
-						return true;
-					}
-
-					else if (userconfig.contains(name)) {
-						Block chest = (Block) getChest(name);
-						Inventory i = getChestInventory(chest);
-						Player player = (Player) sender;
-						player.openInventory(i);
+					if (!(userFile == null)) {
+						if (userconfig.contains(name)) {
+							sender.sendMessage(ChatColor.DARK_GREEN + "Opening"
+									+ name);
+							Block chest = (Block) getChest(name);
+							Inventory i = getChestInventory(chest);
+							Player player = (Player) sender;
+							player.openInventory(i);
+							return true;
+						}
+						sender.sendMessage(ChatColor.RED + userFile.getPath());
 						return true;
 					}
 				}
-				return true;
 			}
 		}
 		return false;

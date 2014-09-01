@@ -32,6 +32,7 @@ public class Listen implements Listener {
 						.loadConfiguration(plugin.userFile);
 				plugin.userconfig.addDefault("Chests", " ");
 				plugin.userconfig.options().copyDefaults(true);
+				plugin.userconfig.createSection("Chests");
 				plugin.userconfig.save(plugin.userFile);
 			} catch (IOException ec) {
 				Bukkit.getServer()
