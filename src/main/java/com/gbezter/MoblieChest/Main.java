@@ -1,4 +1,4 @@
-package com.gabezter.MoblieChest;
+package com.gbezter.MoblieChest;
 
 import java.io.File;
 
@@ -12,14 +12,13 @@ import org.bukkit.block.DoubleChest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
 	File folder = new File(this.getDataFolder().getAbsolutePath()
-			+ File.separator + "User's Chest");
+	        + File.separator + "User's Chest");
 	File chests;
 	Listen listen = new Listen(this);
 
@@ -50,7 +49,8 @@ public class Main extends JavaPlugin {
 			loc.setZ(z);
 			loc.setWorld(w);
 			return loc;
-		} else {
+		}
+		else {
 			return null;
 		}
 
@@ -62,39 +62,46 @@ public class Main extends JavaPlugin {
 			if (c.getInventory().getHolder() instanceof DoubleChest) {
 				DoubleChest dc = (DoubleChest) c.getInventory().getHolder();
 				return dc.getInventory();
-			} else {
+			}
+			else {
 				return c.getBlockInventory();
 			}
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label,
-			String[] args) {
+	        String[] args) {
 		if (cmd.getName().equalsIgnoreCase("chestaccess")) {
 			if (sender.hasPermission("ca.main")) {
 				String name = args[0];
-				String playerName = sender.getName();
-				if (args[0].equalsIgnoreCase("")) {
+				Player player = (Player) sender;
+				String playerT = player.getPlayer().getName();
+				if (args[0] == null) {
 					sender.sendMessage(ChatColor.DARK_GREEN + "Command WIP");
 					sender.sendMessage(ChatColor.DARK_GREEN
-							+ "Use /ca [Chest Name]");
+					        + "Use /ca [Chest Name]");
 					return true;
 				}
-				if (!(args[0].equalsIgnoreCase(""))) {
-					userFile = new File(folder, playerName + ".yml");
-					userconfig = YamlConfiguration.loadConfiguration(userFile);
-					if (!(userFile == null)) {
+				if (!(args[0] == null)) {
+					try {
+						userFile = new File(folder, playerT + ".yml");
 						if (userconfig.contains(name)) {
 							sender.sendMessage(ChatColor.DARK_GREEN + "Opening"
-									+ name);
+							        + name);
 							Block chest = (Block) getChest(name);
 							Inventory i = getChestInventory(chest);
-							Player player = (Player) sender;
 							player.openInventory(i);
 							return true;
 						}
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
+					if (!(userFile == null)) {
+
 						sender.sendMessage(ChatColor.RED + userFile.getPath());
 						return true;
 					}
