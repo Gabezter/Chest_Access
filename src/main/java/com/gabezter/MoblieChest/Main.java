@@ -3,6 +3,8 @@ package com.gabezter.MoblieChest;
 import java.io.File;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -65,14 +67,20 @@ public class Main extends JavaPlugin {
 				int y = Integer.parseInt(loc[1]);
 				int z = Integer.parseInt(loc[2]);
 				World world = Bukkit.getWorld(loc[3]);
-				
+
+				Location loc1 = new Location(world,x,y,z);
+				loc1.getChunk().load(true);
 				Inventory inv = listen.getChestInventory(x, y, z, world);
 				Player player = (Player) sender;
 				player.openInventory(inv);
-				
+
 				return true;
 			}
-			return true;
+			else {
+				sender.sendMessage(ChatColor.DARK_RED + args[0] + " is not a valid chest for you to open.");
+				return true;
+			}
+			
 		}
 
 		return false;

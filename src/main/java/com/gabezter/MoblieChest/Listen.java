@@ -12,6 +12,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -21,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 
 public class Listen implements Listener {
@@ -76,7 +78,7 @@ public class Listen implements Listener {
 			String sx = Integer.toString(x);
 			String sy = Integer.toString(y);
 			String sz = Integer.toString(z);
-			String name = e.getLine(2);
+			String name = "_" + e.getLine(2) + "_";
 			String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
 
 			e.getPlayer().sendMessage(fileName);
@@ -88,13 +90,13 @@ public class Listen implements Listener {
 			File chests1 = plugin.chestsFile;
 			FileConfiguration chests2 = plugin.chestsConfig;
 
-			chest.set("Name", name);
-			chest.set("X", x);
-			chest.set("Y", y);
-			chest.set("Z", z);
-			chest.set("World", e.getBlock().getWorld());
-			chest.set("Users", e.getPlayer().getUniqueId().toString());
-			chest.set("Users." + e.getPlayer().getUniqueId().toString(), e.getPlayer().getName());
+			/*
+			 * chest.set("Name", name); chest.set("X", x); chest.set("Y", y);
+			 * chest.set("Z", z); chest.set("World", e.getBlock().getWorld());
+			 * chest.set("Users", e.getPlayer().getUniqueId().toString());
+			 * chest.set("Users." + e.getPlayer().getUniqueId().toString(),
+			 * e.getPlayer().getName());
+			 */
 
 			List<String> chests = userConfig.getStringList("Chests");
 			chests.add(fileName);
@@ -107,7 +109,7 @@ public class Listen implements Listener {
 			try {
 				chests2.save(chests1);
 				userConfig.save(user);
-				chest.save(chestConfig);
+				// chest.save(chestConfig);
 			}
 			catch (IOException e1) {
 				Bukkit.getServer()
@@ -126,67 +128,85 @@ public class Listen implements Listener {
 
 	@EventHandler
 	public void blockBreak(BlockBreakEvent e) {
-		int x = e.getBlock().getX();
-		int y = e.getBlock().getY();
-		int z = e.getBlock().getZ();
-		String sx = Integer.toString(x);
-		String sy = Integer.toString(y);
-		String sz = Integer.toString(z);
-		e.getPlayer().sendMessage(e.getBlock().toString());
 		if (e.getBlock().getType().equals(Material.SIGN_POST) || e.getBlock().getType().equals(Material.WALL_SIGN) || e.getBlock().getType().equals(Material.SIGN)) {
 			Sign sign = (Sign) e.getBlock().getState();
-			e.getPlayer().sendMessage(sign.getLine(1));
-			if (sign.getLine(1).equals(e.getPlayer().getName())) {
-				plugin.userFile = new File(plugin.users, e.getPlayer().getUniqueId().toString() + ".yml");
-				File user = plugin.userFile;
-				plugin.userconfig = YamlConfiguration.loadConfiguration(user);
-				String name = sign.getLine(2);
-				FileConfiguration userConfig = plugin.userconfig;
-				plugin.chestFile = new File(plugin.chests, sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name + ".yml");
-				File chestConfig = plugin.chestFile;
-				plugin.chestconfig = YamlConfiguration.loadConfiguration(chestConfig);
-				FileConfiguration chest = plugin.chestconfig;
+			if (sign.getLine(0).equals("-----Chest-----")
+			        && sign.getLine(3).equals("----Access----")) {
+				if (sign.getLine(1).equals(e.getPlayer().getName())) {
+					int x = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getX();
+					int y = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getY();
+					int z = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getZ();
+					String sx = Integer.toString(x);
+					String sy = Integer.toString(y);
+					String sz = Integer.toString(z);
+					plugin.userFile = new File(plugin.users, e.getPlayer().getUniqueId().toString() + ".yml");
+					File user = plugin.userFile;
+					plugin.userconfig = YamlConfiguration.loadConfiguration(user);
+					String name = "_" + sign.getLine(2) + "_";
+					FileConfiguration userConfig = plugin.userconfig;
+					/*
+					 * plugin.chestFile = new File(plugin.chests, sx + "`" + sy
+					 * + "`" + sz + "`" + e.getBlock().getWorld().getName() +
+					 * "`" + name + ".yml"); File chestConfig =
+					 * plugin.chestFile; plugin.chestconfig =
+					 * YamlConfiguration.loadConfiguration(chestConfig);
+					 * FileConfiguration chest = plugin.chestconfig;
+					 */
+					File chests1 = plugin.chestsFile;
+					FileConfiguration chests2 = plugin.chestsConfig;
+					String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
 
-				File chests1 = plugin.chestsFile;
-				FileConfiguration chests2 = plugin.chestsConfig;
+					List<String> chests = userConfig.getStringList("Chests");
+					chests.remove(fileName);
+					userConfig.set("Chests", chests);
 
-				userConfig.getStringList("Chests").remove(sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name);
-				chests2.getStringList("Chests").remove(sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name);
+					List<String> chestes = chests2.getStringList("Chests");
+					chestes.remove(fileName);
+					chests2.set("Chests", chestes);
+					/*
+					 * if (chestConfig.exists()) { chestConfig.delete(); } else
+					 * { Bukkit.getServer().getLogger().log(Level.WARNING,
+					 * "[Chest_Access] Config file tried to be deleted but it didn't exist in the first place!"
+					 * ); Bukkit.getServer().getLogger().log(Level.WARNING,
+					 * "[Chest_Access] Config file name: " + sx + "`" + sy + "`"
+					 * + sz + "`" + e.getBlock().getWorld().getName() + "`" +
+					 * name); }
+					 */
+					try {
+						chests2.save(chests1);
+						userConfig.save(user);
 
-				if (chestConfig.exists()) {
-					chestConfig.delete();
+					}
+					catch (IOException e1) {
+					}
+					e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest unlinked Successful!!");
+					e.setCancelled(false);
 				}
 				else {
-					Bukkit.getServer().getLogger().log(null, "Config file tried to be deleted but it didn't exist in the first place!");
-					Bukkit.getServer().getLogger().log(null, "Config file name: " + sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name);
+					e.getPlayer().sendMessage(ChatColor.DARK_RED + "You can't break this Sign!!!");
+					e.setCancelled(true);
 				}
-				try {
-					chests2.save(chests1);
-					userConfig.save(user);
-					chest.save(chestConfig);
-				}
-				catch (IOException e1) {
-				}
-				e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest unlinked Successful!!");
+			}
+			else {
 				e.setCancelled(false);
 			}
-			e.getPlayer().sendMessage(ChatColor.DARK_RED + "You can't break this Sign!!!");
-			e.setCancelled(true);
 		}
-		e.setCancelled(false);
+		else {
+			e.setCancelled(false);
+		}
 	}
 
 	public String getChest(Player player, String string) {
 		String uuid = player.getUniqueId().toString();
-		
+
 		plugin.userFile = new File(plugin.users, uuid + ".yml");
 		File user = plugin.userFile;
 		plugin.userconfig = YamlConfiguration.loadConfiguration(user);
 		FileConfiguration userConfig = plugin.userconfig;
-		
+
 		List<String> chests = userConfig.getStringList("Chests");
-		for(String i : chests){
-			if(i.contains(string)){
+		for (String i : chests) {
+			if (i.contains(string)) {
 				return i;
 			}
 		}
@@ -204,16 +224,26 @@ public class Listen implements Listener {
 		return null;
 	}
 
-	public Inventory getChestInventory(int x, int y, int z, World world){
+	public Inventory getChestInventory(int x, int y, int z, World world) {
 		Inventory inv = null;
 		Location loc = new Location(world, x, y, z);
-		if(loc.getBlock().getType().equals(Material.CHEST)){
-			Block block = loc.getBlock();
-			Chest chest = (Chest) block.getState();
-			inv = chest.getBlockInventory();
+		Block block = loc.getBlock();
+		Chest chest = (Chest) block.getState();
+		
+		if (block.getType().equals(Material.CHEST)) {
+			Inventory chestInventory = ((Chest) block.getState()).getInventory();
+			
+			if (chestInventory instanceof DoubleChestInventory) {
+				DoubleChest c = new DoubleChest((DoubleChestInventory) chestInventory);
+				inv = c.getInventory();
+			}
+
+			else {
+				inv = chest.getBlockInventory();
+			}
 			return inv;
 		}
-		
+
 		return inv;
 	}
 
