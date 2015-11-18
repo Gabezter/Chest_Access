@@ -21,14 +21,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class Listen implements Listener {
 
 	Main plugin;
-	Methods method;
 
 	public Listen(Main plugin) {
 		this.plugin = plugin;
@@ -79,6 +80,7 @@ public class Listen implements Listener {
 			String sy = Integer.toString(y);
 			String sz = Integer.toString(z);
 			String name = "_" + e.getLine(2) + "_";
+			String chestLocation = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName();
 			String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
 
 			e.getPlayer().sendMessage(fileName);
@@ -89,40 +91,45 @@ public class Listen implements Listener {
 			FileConfiguration chest = plugin.chestconfig;
 			File chests1 = plugin.chestsFile;
 			FileConfiguration chests2 = plugin.chestsConfig;
+			if (!chests2.getStringList("Chests").contains(chestLocation)) {
+				/*
+				 * chest.set("Name", name); chest.set("X", x); chest.set("Y",
+				 * y); chest.set("Z", z); chest.set("World",
+				 * e.getBlock().getWorld()); chest.set("Users",
+				 * e.getPlayer().getUniqueId().toString()); chest.set("Users." +
+				 * e.getPlayer().getUniqueId().toString(),
+				 * e.getPlayer().getName());
+				 */
 
-			/*
-			 * chest.set("Name", name); chest.set("X", x); chest.set("Y", y);
-			 * chest.set("Z", z); chest.set("World", e.getBlock().getWorld());
-			 * chest.set("Users", e.getPlayer().getUniqueId().toString());
-			 * chest.set("Users." + e.getPlayer().getUniqueId().toString(),
-			 * e.getPlayer().getName());
-			 */
+				List<String> chests = userConfig.getStringList("Chests");
+				chests.add(fileName);
+				userConfig.set("Chests", chests);
 
-			List<String> chests = userConfig.getStringList("Chests");
-			chests.add(fileName);
-			userConfig.set("Chests", chests);
+				List<String> chestes = chests2.getStringList("Chests");
+				chestes.add(fileName);
+				chests2.set("Chests", chestes);
 
-			List<String> chestes = chests2.getStringList("Chests");
-			chestes.add(fileName);
-			chests2.set("Chests", chestes);
+				try {
+					chests2.save(chests1);
+					userConfig.save(user);
+					// chest.save(chestConfig);
+				}
+				catch (IOException e1) {
+					Bukkit.getServer()
+					        .getLogger()
+					        .info("Could not save"
+					                + e.getPlayer().getUniqueId().toString() + ".yml");
+				}
 
-			try {
-				chests2.save(chests1);
-				userConfig.save(user);
-				// chest.save(chestConfig);
+				e.setLine(0, "-----Chest-----");
+				e.setLine(1, e.getPlayer().getName());
+				e.setLine(3, "----Access----");
+				e.getPlayer().sendMessage(
+				        ChatColor.DARK_GREEN + "Chest linked Successful!!");
 			}
-			catch (IOException e1) {
-				Bukkit.getServer()
-				        .getLogger()
-				        .info("Could not save"
-				                + e.getPlayer().getUniqueId().toString() + ".yml");
+			else {
+				e.getPlayer().sendMessage(ChatColor.DARK_RED + "This chest is already claimed.");
 			}
-
-			e.setLine(0, "-----Chest-----");
-			e.setLine(1, e.getPlayer().getName());
-			e.setLine(3, "----Access----");
-			e.getPlayer().sendMessage(
-			        ChatColor.DARK_GREEN + "Chest linked Successful!!");
 		}
 	}
 
@@ -196,6 +203,33 @@ public class Listen implements Listener {
 		}
 	}
 
+	@EventHandler
+	public void onInventoryClose(InventoryCloseEvent e) {
+		if (e.getInventory().getName().contains("Chest Access - ")) {
+			Inventory inv = e.getInventory();
+			String[] losc = inv.getName().split("`");
+			int x = Integer.parseInt(losc[1]);
+			int y = Integer.parseInt(losc[2]);
+			int z = Integer.parseInt(losc[3]);
+
+			World world = Bukkit.getWorld(losc[4]);
+			Location loc = new Location(world, x, y, z);
+
+			Block block = loc.getBlock();
+			Chest chest1 = (Chest) block.getState();
+			Block block2 = block.getRelative(getAttachedBlock(block));
+			Chest chest2 = (Chest) block2.getState();
+
+			for (ItemStack i : inv.getContents()) {
+				chest1.getInventory().addItem(i);
+				inv.removeItem(i);
+			}
+			for(ItemStack i : inv.getContents()){
+				chest2.getInventory().addItem(i);
+			}
+		}
+	}
+
 	public String getChest(Player player, String string) {
 		String uuid = player.getUniqueId().toString();
 
@@ -229,10 +263,10 @@ public class Listen implements Listener {
 		Location loc = new Location(world, x, y, z);
 		Block block = loc.getBlock();
 		Chest chest = (Chest) block.getState();
-		
+
 		if (block.getType().equals(Material.CHEST)) {
 			Inventory chestInventory = ((Chest) block.getState()).getInventory();
-			
+
 			if (chestInventory instanceof DoubleChestInventory) {
 				DoubleChest c = new DoubleChest((DoubleChestInventory) chestInventory);
 				inv = c.getInventory();
@@ -245,6 +279,19 @@ public class Listen implements Listener {
 		}
 
 		return inv;
+	}
+
+	public Block getDoubleUnloadedChest(int x, int y, int z, World world) {
+		Location loc = new Location(world, x, y, z);
+		Block block = loc.getBlock();
+		BlockFace face = getAttachedBlock(block);
+		if (face == null) {
+			return null;
+		}
+		else {
+			Block dc = block.getRelative(face);
+			return dc;
+		}
 	}
 
 }

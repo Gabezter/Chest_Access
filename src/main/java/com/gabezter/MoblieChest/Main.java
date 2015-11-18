@@ -5,13 +5,17 @@ import java.io.File;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
@@ -21,7 +25,6 @@ public class Main extends JavaPlugin {
 	        + File.separator + "Chests");
 
 	Listen listen = new Listen(this);
-	Methods method;
 
 	FileConfiguration chestsConfig = null;
 	File chestsFile;
@@ -66,10 +69,32 @@ public class Main extends JavaPlugin {
 				int x = Integer.parseInt(loc[0]);
 				int y = Integer.parseInt(loc[1]);
 				int z = Integer.parseInt(loc[2]);
+				String sx = loc[0];
+				String sy = loc[1];
+				String sz = loc[0];
 				World world = Bukkit.getWorld(loc[3]);
 
-				Location loc1 = new Location(world,x,y,z);
+				Location loc1 = new Location(world, x, y, z);
 				loc1.getChunk().load(true);
+				if (loc1.getChunk().isLoaded() == false) {
+					Block block = loc1.getBlock();
+					Block block2 = listen.getDoubleUnloadedChest(x, y, z, world);
+
+					Inventory invs = Bukkit.getServer().createInventory(null, 54, "Chest Access - `" + sx +"," + sy+"," + sz+"," + world.toString()+"` " + args[0]);
+					Chest chest1 = (Chest) block.getState();
+					Chest chest2 = (Chest) block2.getState();
+
+					for (ItemStack i : chest1.getInventory().getContents()) {
+						invs.addItem(i);
+					}
+					for (ItemStack i : chest2.getInventory().getContents()) {
+						invs.addItem(i);
+					}
+
+					Player player = (Player) sender;
+					player.openInventory(invs);
+					return true;
+				}
 				Inventory inv = listen.getChestInventory(x, y, z, world);
 				Player player = (Player) sender;
 				player.openInventory(inv);
@@ -80,7 +105,7 @@ public class Main extends JavaPlugin {
 				sender.sendMessage(ChatColor.DARK_RED + args[0] + " is not a valid chest for you to open.");
 				return true;
 			}
-			
+
 		}
 
 		return false;
