@@ -68,22 +68,26 @@ public class Listen implements Listener {
 
 		FileConfiguration userConfig = plugin.userconfig;
 
-		if ((getAttachedBlock(e.getBlock()) != null)
+		Block block = e.getBlock();
+		Block block2 = block.getRelative(getAttachedBlock(block));
+
+		if ((getAttachedBlock(block) != null)
 		        && e.getLine(0).equalsIgnoreCase("Chest Access")
 		        && e.getLine(1).equalsIgnoreCase(e.getPlayer().getName())
-		        && !(e.getLine(2).equals(""))) {
+		        && !(e.getLine(2).equals(""))
+		        && (isChestClaimed(block.getRelative(getAttachedBlock(block))) == false)
+		        && (getAttachedBlock(block2) == null 
+		        || isChestClaimed(block2.getRelative(getAttachedBlock(block2))) == false)) {
 
-			int x = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getX();
-			int y = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getY();
-			int z = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getZ();
+			int x = block.getRelative(getAttachedBlock(block)).getX();
+			int y = block.getRelative(getAttachedBlock(block)).getY();
+			int z = block.getRelative(getAttachedBlock(block)).getZ();
 			String sx = Integer.toString(x);
 			String sy = Integer.toString(y);
 			String sz = Integer.toString(z);
 			String name = "_" + e.getLine(2) + "_";
 			String chestLocation = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName();
 			String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
-
-			e.getPlayer().sendMessage(fileName);
 
 			plugin.chestFile = new File(plugin.chests, fileName + ".yml");
 			File chestConfig = plugin.chestFile;
@@ -224,7 +228,7 @@ public class Listen implements Listener {
 				chest1.getInventory().addItem(i);
 				inv.removeItem(i);
 			}
-			for(ItemStack i : inv.getContents()){
+			for (ItemStack i : inv.getContents()) {
 				chest2.getInventory().addItem(i);
 			}
 		}
@@ -294,4 +298,31 @@ public class Listen implements Listener {
 		}
 	}
 
+	public boolean isChestClaimed(Block block) {
+		FileConfiguration chests2 = plugin.chestsConfig;
+
+		String sx = Integer.toString(block.getX());
+		String sy = Integer.toString(block.getY());
+		String sz = Integer.toString(block.getZ());
+		String sworld = block.getWorld().toString();
+
+		List<String> chests = chests2.getStringList("Chests");
+
+		for (String s : chests) {
+			String[] chest;
+			chest = s.split("`");
+			if (chest[0].equals(sx)
+			        && chest[1].equals(sy)
+			        && chest[2].equals(sz)
+			        && chest[3].equals(sworld)) {
+				return true;
+			}
+			else {
+				return false;
+			}
+
+		}
+
+		return false;
+	}
 }
