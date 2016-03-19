@@ -1,7 +1,8 @@
 package com.gabezter.MoblieChest;
 
 import java.io.File;
-import java.lang.reflect.Array;
+import java.util.ArrayList;
+//import java.lang.reflect.Array;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -20,10 +21,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
-	File users = new File(this.getDataFolder().getAbsolutePath()
-	        + File.separator + "User's Chest");
-	File chests = new File(this.getDataFolder().getAbsolutePath()
-	        + File.separator + "Chests");
+	File users = new File(this.getDataFolder().getAbsolutePath() + File.separator + "User's Chest");
+	File chests = new File(this.getDataFolder().getAbsolutePath() + File.separator + "Chests");
 
 	Listen listen = new Listen(this);
 
@@ -51,11 +50,16 @@ public class Main extends JavaPlugin {
 	FileConfiguration chestconfig = null;
 	File chestFile;
 
+	String logo = ChatColor.AQUA + "[Chest Access] " + ChatColor.DARK_GREEN;
+	String logo2 = ChatColor.AQUA + " Chest Access " + ChatColor.DARK_GREEN;
+	String chestName = ChatColor.BLUE + " [Chest Name] " + ChatColor.DARK_GREEN;
+
 	@Override
 	public void onDisable() {
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		Player player = (Player) sender;
 		if (cmd.getName().equalsIgnoreCase("chestaccess")) {
 			if (args[0].equalsIgnoreCase("open")) {
 				if (!(listen.getChest((Player) sender, args[1]) == null)) {
@@ -86,12 +90,11 @@ public class Main extends JavaPlugin {
 							invs.addItem(i);
 						}
 
-						Player player = (Player) sender;
 						player.openInventory(invs);
 						return true;
 					}
 					Inventory inv = listen.getChestInventory(x, y, z, world);
-					Player player = (Player) sender;
+
 					player.openInventory(inv);
 
 					return true;
@@ -101,23 +104,34 @@ public class Main extends JavaPlugin {
 					return true;
 				}
 			}
-			Player player = (Player) sender;
-			if (args[0].equalsIgnoreCase("list")) {
+
+			else if (args[0].equalsIgnoreCase("list")) {
 				userFile = new File(users, player.getUniqueId().toString() + ".yml");
 				File user = userFile;
 				userconfig = YamlConfiguration.loadConfiguration(user);
 
 				List<String> chests = userconfig.getStringList("Chests");
-				List<String> list = null;
+				List<String> list = new ArrayList<String>();
+				String[] cs = new String[chests.size() * 20];
+
 				for (String s : chests) {
-					String[] cs = s.split("`");
-					cs[4].replace("_", "");
-					String[] st;
-					st = {st,cs[4]};
+					cs = s.split("`");
+					list.add(logo + "- " + cs[4].replace("_", ""));
 				}
-				
-				player.sendMessage(st);
+
+				String[] simpleArray = new String[list.size()];
+				list.toArray(simpleArray);
+
+				player.sendMessage(logo);
+				player.sendMessage(ChatColor.DARK_GREEN + "Your Chests:");
+				player.sendMessage(simpleArray);
 				return true;
+			}
+			else if (args[0].equalsIgnoreCase("help")) {
+				player.sendMessage(ChatColor.DARK_GREEN + "______" + logo2 + "Commands______");
+				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess open" + chestName + ChatColor.GOLD + "- Opens named chest.");
+				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess list" + ChatColor.GOLD + " - Lists possible chests to open.");
+				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess help" + ChatColor.GOLD + " - This command.");
 			}
 		}
 

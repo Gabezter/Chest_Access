@@ -3,6 +3,7 @@ package com.gabezter.MoblieChest;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -43,18 +44,14 @@ public class Listen implements Listener {
 		if (!user.exists()) {
 			try {
 				user.createNewFile();
-				userConfig = YamlConfiguration
-				        .loadConfiguration(user);
+				userConfig = YamlConfiguration.loadConfiguration(user);
 				userConfig.addDefault("Chests", " ");
 				userConfig.options().copyDefaults(true);
 				userConfig.set("Name", e.getPlayer().getName());
 				userConfig.save(user);
 			}
 			catch (IOException ec) {
-				Bukkit.getServer()
-				        .getLogger()
-				        .info("Could not create or save"
-				                + e.getPlayer().getUniqueId().toString() + ".yml");
+				Bukkit.getServer().getLogger().info("Could not create or save" + e.getPlayer().getUniqueId().toString() + ".yml");
 			}
 		}
 	}
@@ -71,13 +68,7 @@ public class Listen implements Listener {
 		Block block = e.getBlock();
 		Block block2 = block.getRelative(getAttachedBlock(block));
 
-		if ((getAttachedBlock(block) != null)
-		        && e.getLine(0).equalsIgnoreCase("Chest Access")
-		        && e.getLine(1).equalsIgnoreCase(e.getPlayer().getName())
-		        && !(e.getLine(2).equals(""))
-		        && (isChestClaimed(block.getRelative(getAttachedBlock(block))) == false)
-		        && (getAttachedBlock(block2) == null 
-		        || isChestClaimed(block2.getRelative(getAttachedBlock(block2))) == false)) {
+		if ((getAttachedBlock(block) != null) && e.getLine(0).equalsIgnoreCase("Chest Access") && e.getLine(1).equalsIgnoreCase(e.getPlayer().getName()) && !(e.getLine(2).equals("")) && (isChestClaimed(block.getRelative(getAttachedBlock(block))) == false) && (getAttachedBlock(block2) == null || isChestClaimed(block2.getRelative(getAttachedBlock(block2))) == false)) {
 
 			int x = block.getRelative(getAttachedBlock(block)).getX();
 			int y = block.getRelative(getAttachedBlock(block)).getY();
@@ -92,7 +83,7 @@ public class Listen implements Listener {
 			plugin.chestFile = new File(plugin.chests, fileName + ".yml");
 			File chestConfig = plugin.chestFile;
 			plugin.chestconfig = YamlConfiguration.loadConfiguration(chestConfig);
-			FileConfiguration chest = plugin.chestconfig;
+			// FileConfiguration chest = plugin.chestconfig;
 			File chests1 = plugin.chestsFile;
 			FileConfiguration chests2 = plugin.chestsConfig;
 			if (!chests2.getStringList("Chests").contains(chestLocation)) {
@@ -119,17 +110,13 @@ public class Listen implements Listener {
 					// chest.save(chestConfig);
 				}
 				catch (IOException e1) {
-					Bukkit.getServer()
-					        .getLogger()
-					        .info("Could not save"
-					                + e.getPlayer().getUniqueId().toString() + ".yml");
+					Bukkit.getServer().getLogger().info("Could not save" + e.getPlayer().getUniqueId().toString() + ".yml");
 				}
 
 				e.setLine(0, "-----Chest-----");
 				e.setLine(1, e.getPlayer().getName());
 				e.setLine(3, "----Access----");
-				e.getPlayer().sendMessage(
-				        ChatColor.DARK_GREEN + "Chest linked Successful!!");
+				e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest linked Successful!!");
 			}
 			else {
 				e.getPlayer().sendMessage(ChatColor.DARK_RED + "This chest is already claimed.");
@@ -141,8 +128,8 @@ public class Listen implements Listener {
 	public void blockBreak(BlockBreakEvent e) {
 		if (e.getBlock().getType().equals(Material.SIGN_POST) || e.getBlock().getType().equals(Material.WALL_SIGN) || e.getBlock().getType().equals(Material.SIGN)) {
 			Sign sign = (Sign) e.getBlock().getState();
-			if (sign.getLine(0).equals("-----Chest-----")
-			        && sign.getLine(3).equals("----Access----")) {
+			e.setCancelled(true);
+			if (sign.getLine(0).equals("-----Chest-----") && sign.getLine(3).equals("----Access----")) {
 				if (sign.getLine(1).equals(e.getPlayer().getName())) {
 					int x = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getX();
 					int y = e.getBlock().getRelative(getAttachedBlock(e.getBlock())).getY();
@@ -155,14 +142,12 @@ public class Listen implements Listener {
 					plugin.userconfig = YamlConfiguration.loadConfiguration(user);
 					String name = "_" + sign.getLine(2) + "_";
 					FileConfiguration userConfig = plugin.userconfig;
-					/*
-					 * plugin.chestFile = new File(plugin.chests, sx + "`" + sy
-					 * + "`" + sz + "`" + e.getBlock().getWorld().getName() +
-					 * "`" + name + ".yml"); File chestConfig =
-					 * plugin.chestFile; plugin.chestconfig =
-					 * YamlConfiguration.loadConfiguration(chestConfig);
-					 * FileConfiguration chest = plugin.chestconfig;
-					 */
+
+					plugin.chestFile = new File(plugin.chests, sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name + ".yml");
+					File chestConfig = plugin.chestFile;
+					plugin.chestconfig = YamlConfiguration.loadConfiguration(chestConfig);
+				//	FileConfiguration chest = plugin.chestconfig;
+
 					File chests1 = plugin.chestsFile;
 					FileConfiguration chests2 = plugin.chestsConfig;
 					String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
@@ -174,15 +159,15 @@ public class Listen implements Listener {
 					List<String> chestes = chests2.getStringList("Chests");
 					chestes.remove(fileName);
 					chests2.set("Chests", chestes);
-					/*
-					 * if (chestConfig.exists()) { chestConfig.delete(); } else
-					 * { Bukkit.getServer().getLogger().log(Level.WARNING,
-					 * "[Chest_Access] Config file tried to be deleted but it didn't exist in the first place!"
-					 * ); Bukkit.getServer().getLogger().log(Level.WARNING,
-					 * "[Chest_Access] Config file name: " + sx + "`" + sy + "`"
-					 * + sz + "`" + e.getBlock().getWorld().getName() + "`" +
-					 * name); }
-					 */
+
+					if (chestConfig.exists()) {
+						chestConfig.delete();
+					}
+					else {
+						Bukkit.getServer().getLogger().log(Level.WARNING, "[Chest_Access] Config file tried to be deleted but it didn't exist in the first place!");
+						Bukkit.getServer().getLogger().log(Level.WARNING, "[Chest_Access] Config file name: " + sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name);
+					}
+
 					try {
 						chests2.save(chests1);
 						userConfig.save(user);
@@ -191,7 +176,7 @@ public class Listen implements Listener {
 					catch (IOException e1) {
 					}
 					e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest unlinked Successful!!");
-					e.setCancelled(false);
+					e.getBlock().breakNaturally();
 				}
 				else {
 					e.getPlayer().sendMessage(ChatColor.DARK_RED + "You can't break this Sign!!!");
@@ -311,10 +296,7 @@ public class Listen implements Listener {
 		for (String s : chests) {
 			String[] chest;
 			chest = s.split("`");
-			if (chest[0].equals(sx)
-			        && chest[1].equals(sy)
-			        && chest[2].equals(sz)
-			        && chest[3].equals(sworld)) {
+			if (chest[0].equals(sx) && chest[1].equals(sy) && chest[2].equals(sz) && chest[3].equals(sworld)) {
 				return true;
 			}
 			else {

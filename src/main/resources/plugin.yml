@@ -5,6 +5,7 @@ commands:
   chestaccess:
     aliases: ca
     permission: ca.main
+    description: Use /chestaccess help
 permissions:
   ca.main:
     description: Main Permission
