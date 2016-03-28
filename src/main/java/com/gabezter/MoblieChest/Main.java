@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 //import java.lang.reflect.Array;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -61,7 +63,12 @@ public class Main extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		Player player = (Player) sender;
 		if (cmd.getName().equalsIgnoreCase("chestaccess")) {
-			if (args[0].equalsIgnoreCase("open")) {
+			if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
+				player.sendMessage(ChatColor.DARK_GREEN + "______" + logo2 + "Commands______");
+				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess open" + chestName + ChatColor.GOLD + "- Opens named chest.");
+				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess list" + ChatColor.GOLD + " - Lists possible chests to open.");
+				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess help" + ChatColor.GOLD + " - This command.");
+			} else if (args[0].equalsIgnoreCase("open")) {
 				if (!(listen.getChest((Player) sender, args[1]) == null)) {
 					String chest = listen.getChest((Player) sender, args[1]);
 					String[] loc = chest.split("`");
@@ -127,14 +134,33 @@ public class Main extends JavaPlugin {
 				player.sendMessage(simpleArray);
 				return true;
 			}
-			else if (args[0].equalsIgnoreCase("help")) {
-				player.sendMessage(ChatColor.DARK_GREEN + "______" + logo2 + "Commands______");
-				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess open" + chestName + ChatColor.GOLD + "- Opens named chest.");
-				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess list" + ChatColor.GOLD + " - Lists possible chests to open.");
-				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess help" + ChatColor.GOLD + " - This command.");
-			}
+			 
 		}
 
 		return false;
+	}
+	
+	
+	public void signNameReplace(String name, UUID uuid){
+		userFile = new File(users, uuid.toString() + ".yml");
+		File user = userFile;
+		userconfig = YamlConfiguration.loadConfiguration(user);
+		for(String signS : userconfig.getConfigurationSection("Chests").getKeys(false)){
+			String[] chest = signS.split("`");
+			String xS = chest[0];
+			String yS = chest[1];
+			String zS = chest[2];
+			String worldS = chest[3];
+			
+			int x = Integer.parseInt(xS);
+			int y = Integer.parseInt(yS);
+			int z = Integer.parseInt(zS);
+			World world =  Bukkit.getServer().getWorld(worldS);
+			
+			Location loc = new Location(world, x, y, z);
+			Block signB = loc.getBlock();
+			Sign sign = (Sign) signB;
+			sign.setLine(1, name);
+		}
 	}
 }

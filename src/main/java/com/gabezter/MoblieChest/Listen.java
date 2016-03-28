@@ -54,6 +54,19 @@ public class Listen implements Listener {
 				Bukkit.getServer().getLogger().info("Could not create or save" + e.getPlayer().getUniqueId().toString() + ".yml");
 			}
 		}
+		else if (user.exists()) {
+			userConfig = YamlConfiguration.loadConfiguration(user);
+			if (!userConfig.get("Name").equals(e.getPlayer().getName())) {
+				try {
+					userConfig.set("Name", e.getPlayer().getName());
+					plugin.signNameReplace(e.getPlayer().getName(), e.getPlayer().getUniqueId());
+					userConfig.save(user);
+				}
+				catch (IOException e1) {
+					Bukkit.getServer().getLogger().info("Could not save" + e.getPlayer().getUniqueId().toString() + ".yml");
+				}
+			}
+		}
 	}
 
 	@EventHandler
@@ -66,67 +79,71 @@ public class Listen implements Listener {
 		FileConfiguration userConfig = plugin.userconfig;
 
 		Block block = e.getBlock();
-		Block block2 = block.getRelative(getAttachedBlock(block));
+		Material bm = block.getType();
 
-		if ((getAttachedBlock(block) != null) && e.getLine(0).equalsIgnoreCase("Chest Access") && e.getLine(1).equalsIgnoreCase(e.getPlayer().getName()) && !(e.getLine(2).equals("")) && (isChestClaimed(block.getRelative(getAttachedBlock(block))) == false) && (getAttachedBlock(block2) == null || isChestClaimed(block2.getRelative(getAttachedBlock(block2))) == false)) {
+		if (bm.equals(Material.WALL_SIGN)) {
+			Block block2 = block.getRelative(getAttachedBlock(block));
+			if ((getAttachedBlock(block) != null) && e.getLine(0).equalsIgnoreCase("Chest Access") && e.getLine(1).equalsIgnoreCase(e.getPlayer().getName()) && !(e.getLine(2).equals("")) && (isChestClaimed(block.getRelative(getAttachedBlock(block))) == false) && (getAttachedBlock(block2) == null || isChestClaimed(block2.getRelative(getAttachedBlock(block2))) == false)) {
 
-			int x = block.getRelative(getAttachedBlock(block)).getX();
-			int y = block.getRelative(getAttachedBlock(block)).getY();
-			int z = block.getRelative(getAttachedBlock(block)).getZ();
-			String sx = Integer.toString(x);
-			String sy = Integer.toString(y);
-			String sz = Integer.toString(z);
-			String name = "_" + e.getLine(2) + "_";
-			String chestLocation = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName();
-			String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
+				int x = block.getRelative(getAttachedBlock(block)).getX();
+				int y = block.getRelative(getAttachedBlock(block)).getY();
+				int z = block.getRelative(getAttachedBlock(block)).getZ();
+				String sx = Integer.toString(x);
+				String sy = Integer.toString(y);
+				String sz = Integer.toString(z);
+				String name = "_" + e.getLine(2) + "_";
+				String chestLocation = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName();
+				String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
 
-			plugin.chestFile = new File(plugin.chests, fileName + ".yml");
-			File chestConfig = plugin.chestFile;
-			plugin.chestconfig = YamlConfiguration.loadConfiguration(chestConfig);
-			// FileConfiguration chest = plugin.chestconfig;
-			File chests1 = plugin.chestsFile;
-			FileConfiguration chests2 = plugin.chestsConfig;
-			if (!chests2.getStringList("Chests").contains(chestLocation)) {
-				/*
-				 * chest.set("Name", name); chest.set("X", x); chest.set("Y",
-				 * y); chest.set("Z", z); chest.set("World",
-				 * e.getBlock().getWorld()); chest.set("Users",
-				 * e.getPlayer().getUniqueId().toString()); chest.set("Users." +
-				 * e.getPlayer().getUniqueId().toString(),
-				 * e.getPlayer().getName());
-				 */
+				plugin.chestFile = new File(plugin.chests, fileName + ".yml");
+				File chestConfig = plugin.chestFile;
+				plugin.chestconfig = YamlConfiguration.loadConfiguration(chestConfig);
+				// FileConfiguration chest = plugin.chestconfig;
+				File chests1 = plugin.chestsFile;
+				FileConfiguration chests2 = plugin.chestsConfig;
+				if (!chests2.getStringList("Chests").contains(chestLocation)) {
+					/*
+					 * chest.set("Name", name); chest.set("X", x);
+					 * chest.set("Y", y); chest.set("Z", z); chest.set("World",
+					 * e.getBlock().getWorld()); chest.set("Users",
+					 * e.getPlayer().getUniqueId().toString());
+					 * chest.set("Users." +
+					 * e.getPlayer().getUniqueId().toString(),
+					 * e.getPlayer().getName());
+					 */
 
-				List<String> chests = userConfig.getStringList("Chests");
-				chests.add(fileName);
-				userConfig.set("Chests", chests);
+					List<String> chests = userConfig.getStringList("Chests");
+					chests.add(fileName);
+					userConfig.set("Chests", chests);
 
-				List<String> chestes = chests2.getStringList("Chests");
-				chestes.add(fileName);
-				chests2.set("Chests", chestes);
+					List<String> chestes = chests2.getStringList("Chests");
+					chestes.add(fileName);
+					chests2.set("Chests", chestes);
 
-				try {
-					chests2.save(chests1);
-					userConfig.save(user);
-					// chest.save(chestConfig);
+					try {
+						chests2.save(chests1);
+						userConfig.save(user);
+						// chest.save(chestConfig);
+					}
+					catch (IOException e1) {
+						Bukkit.getServer().getLogger().info("Could not save" + e.getPlayer().getUniqueId().toString() + ".yml");
+					}
+
+					e.setLine(0, "-----Chest-----");
+					e.setLine(1, e.getPlayer().getName());
+					e.setLine(3, "----Access----");
+					e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest linked Successful!!");
 				}
-				catch (IOException e1) {
-					Bukkit.getServer().getLogger().info("Could not save" + e.getPlayer().getUniqueId().toString() + ".yml");
+				else {
+					e.getPlayer().sendMessage(ChatColor.DARK_RED + "This chest is already claimed.");
 				}
-
-				e.setLine(0, "-----Chest-----");
-				e.setLine(1, e.getPlayer().getName());
-				e.setLine(3, "----Access----");
-				e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest linked Successful!!");
-			}
-			else {
-				e.getPlayer().sendMessage(ChatColor.DARK_RED + "This chest is already claimed.");
 			}
 		}
 	}
 
 	@EventHandler
 	public void blockBreak(BlockBreakEvent e) {
-		if (e.getBlock().getType().equals(Material.SIGN_POST) || e.getBlock().getType().equals(Material.WALL_SIGN) || e.getBlock().getType().equals(Material.SIGN)) {
+		if (e.getBlock().getType().equals(Material.WALL_SIGN)) {
 			Sign sign = (Sign) e.getBlock().getState();
 			e.setCancelled(true);
 			if (sign.getLine(0).equals("-----Chest-----") && sign.getLine(3).equals("----Access----")) {
@@ -146,7 +163,7 @@ public class Listen implements Listener {
 					plugin.chestFile = new File(plugin.chests, sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name + ".yml");
 					File chestConfig = plugin.chestFile;
 					plugin.chestconfig = YamlConfiguration.loadConfiguration(chestConfig);
-				//	FileConfiguration chest = plugin.chestconfig;
+					// FileConfiguration chest = plugin.chestconfig;
 
 					File chests1 = plugin.chestsFile;
 					FileConfiguration chests2 = plugin.chestsConfig;
@@ -185,6 +202,93 @@ public class Listen implements Listener {
 			}
 			else {
 				e.setCancelled(false);
+			}
+		}
+		else if (e.getBlock().getType().equals(Material.CHEST)) {
+			Location loc = e.getBlock().getLocation();
+			for (int j = 0; j >= 3; j++) {
+				Location loc2 = loc;
+				if (j == 0) {
+					loc2.add(1, 0, 0);
+					if (loc2.getBlock().getType().equals(Material.WALL_SIGN)) {
+						Sign sign = (Sign) loc2.getBlock();
+						if (sign.getLine(0).equals("-----Chest-----") && sign.getLine(3).equals("----Access----")) {
+							if (sign.getLine(1).equals(e.getPlayer().getName())) {
+								
+								int x = loc2.getBlockX();
+								int y = loc2.getBlockY();
+								int z = loc2.getBlockZ();
+								
+								
+								String sx = Integer.toString(x);
+								String sy = Integer.toString(y);
+								String sz = Integer.toString(z);
+								
+								
+								plugin.userFile = new File(plugin.users, e.getPlayer().getUniqueId().toString() + ".yml");
+								File user = plugin.userFile;
+								plugin.userconfig = YamlConfiguration.loadConfiguration(user);
+								String name = "_" + sign.getLine(2) + "_";
+								FileConfiguration userConfig = plugin.userconfig;
+
+								plugin.chestFile = new File(plugin.chests, sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name + ".yml");
+								File chestConfig = plugin.chestFile;
+								plugin.chestconfig = YamlConfiguration.loadConfiguration(chestConfig);
+								// FileConfiguration chest = plugin.chestconfig;
+
+								File chests1 = plugin.chestsFile;
+								FileConfiguration chests2 = plugin.chestsConfig;
+								String fileName = sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name;
+
+								List<String> chests = userConfig.getStringList("Chests");
+								chests.remove(fileName);
+								userConfig.set("Chests", chests);
+
+								List<String> chestes = chests2.getStringList("Chests");
+								chestes.remove(fileName);
+								chests2.set("Chests", chestes);
+
+								if (chestConfig.exists()) {
+									chestConfig.delete();
+								}
+								else {
+									Bukkit.getServer().getLogger().log(Level.WARNING, "[Chest_Access] Config file tried to be deleted but it didn't exist in the first place!");
+									Bukkit.getServer().getLogger().log(Level.WARNING, "[Chest_Access] Config file name: " + sx + "`" + sy + "`" + sz + "`" + e.getBlock().getWorld().getName() + "`" + name);
+								}
+
+								try {
+									chests2.save(chests1);
+									userConfig.save(user);
+
+								}
+								catch (IOException e1) {
+								}
+								e.getPlayer().sendMessage(ChatColor.DARK_GREEN + "Chest unlinked Successful!!");
+								e.getBlock().breakNaturally();
+							}
+							else {
+								e.getPlayer().sendMessage(plugin.logo + ChatColor.DARK_RED + " This chest does not belong to you!!!!!");
+								e.setCancelled(true);
+							}
+							
+							// TODO Build Notes
+							// TODO Deleting config chest upon chest break
+							// TODO Only designed to test for one chest currently.
+							
+							
+						}
+					}
+				}
+				if (j == 1) {
+					loc2.add(-1, 0, 0);
+				}
+				if (j == 2) {
+					loc2.add(0, 0, 1);
+				}
+				if (j == 3) {
+					loc2.add(0, 0, -1);
+				}
+
 			}
 		}
 		else {
