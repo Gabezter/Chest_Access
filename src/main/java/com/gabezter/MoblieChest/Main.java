@@ -68,7 +68,8 @@ public class Main extends JavaPlugin {
 				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess open" + chestName + ChatColor.GOLD + "- Opens named chest.");
 				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess list" + ChatColor.GOLD + " - Lists possible chests to open.");
 				player.sendMessage(ChatColor.DARK_GREEN + "/chestaccess help" + ChatColor.GOLD + " - This command.");
-			} else if (args[0].equalsIgnoreCase("open")) {
+			}
+			else if (args[0].equalsIgnoreCase("open")) {
 				if (!(listen.getChest((Player) sender, args[1]) == null)) {
 					String chest = listen.getChest((Player) sender, args[1]);
 					String[] loc = chest.split("`");
@@ -101,10 +102,15 @@ public class Main extends JavaPlugin {
 						return true;
 					}
 					Inventory inv = listen.getChestInventory(x, y, z, world);
+					if (inv != null) {
+						player.openInventory(inv);
+						return true;
+					}
+					else {
+						player.sendMessage(logo + ChatColor.DARK_RED + " Check to see if " + args[1] + " is still available.");
+						return true;
+					}
 
-					player.openInventory(inv);
-
-					return true;
 				}
 				else {
 					sender.sendMessage(ChatColor.DARK_RED + args[0] + " is not a valid chest for you to open.");
@@ -123,7 +129,7 @@ public class Main extends JavaPlugin {
 
 				for (String s : chests) {
 					cs = s.split("`");
-					list.add(logo + "- " + cs[4].replace("_", ""));
+					list.add(ChatColor.DARK_GREEN + "- " + cs[4].replace("_", ""));
 				}
 
 				String[] simpleArray = new String[list.size()];
@@ -134,29 +140,28 @@ public class Main extends JavaPlugin {
 				player.sendMessage(simpleArray);
 				return true;
 			}
-			 
+
 		}
 
 		return false;
 	}
-	
-	
-	public void signNameReplace(String name, UUID uuid){
+
+	public void signNameReplace(String name, UUID uuid) {
 		userFile = new File(users, uuid.toString() + ".yml");
 		File user = userFile;
 		userconfig = YamlConfiguration.loadConfiguration(user);
-		for(String signS : userconfig.getConfigurationSection("Chests").getKeys(false)){
+		for (String signS : userconfig.getConfigurationSection("Chests").getKeys(false)) {
 			String[] chest = signS.split("`");
 			String xS = chest[0];
 			String yS = chest[1];
 			String zS = chest[2];
 			String worldS = chest[3];
-			
+
 			int x = Integer.parseInt(xS);
 			int y = Integer.parseInt(yS);
 			int z = Integer.parseInt(zS);
-			World world =  Bukkit.getServer().getWorld(worldS);
-			
+			World world = Bukkit.getServer().getWorld(worldS);
+
 			Location loc = new Location(world, x, y, z);
 			Block signB = loc.getBlock();
 			Sign sign = (Sign) signB;
