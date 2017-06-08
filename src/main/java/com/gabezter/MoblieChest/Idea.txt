@@ -1,0 +1,29 @@
+Replace sign read with named chest (via anvil)
+  Use as chest lock?
+    If so what item, as default, used for reading player owner and accessors 
+    
+    
+    
+    ChestFile.yml example
+{    
+    [X]'[Y]'[Z]'[WORLD]'[CHEST_NAME1]
+      - OWNER
+        - [USER1 UUID]
+      - TRUSTEES
+        - [USER2 UUID]
+        - [USER3 UUID].......
+        
+    [X]'[Y]'[Z]'[WORLD]'[CHEST_NAME2]:
+      -OWNER........
+}
+
+    [User UUID].yml example
+{
+    [CHEST_NAME1]
+      - [X]
+      - [Y]
+      - [Z]
+      - [WORLD]
+    [CHEST_NAME1]
+      - [X]....
+}
